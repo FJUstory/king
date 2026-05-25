@@ -11,26 +11,27 @@
             display: flex; justify-content: center; align-items: center; 
             cursor: pointer; overflow: hidden; 
             font-family: "Microsoft JhengHei", sans-serif; 
-            touch-action: manipulation; /* 提升觸控體驗 */
         }
-        .container { text-align: center; padding: 20px; max-width: 90%; }
-        .instruction { font-size: 3.5rem; font-weight: bold; margin-bottom: 20px; word-wrap: break-word;}
-        .sub-text { font-size: 1.2rem; color: #aaa; margin-top: 10px; display: block;}
-        .controls { margin-top: 20px; }
+        .container { text-align: center; padding: 20px; width: 100%; }
+        .instruction { font-size: 3rem; font-weight: bold; margin-bottom: 20px; }
+        .sub-text { font-size: 1.2rem; color: #aaa; margin-top: 10px; }
+        .controls { 
+            margin-top: 20px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px;
+        }
         button { 
             background: transparent; border: 1px solid yellow; color: yellow; 
-            padding: 15px 25px; cursor: pointer; font-size: 1.2rem; margin: 0 10px;
-            border-radius: 8px; transition: all 0.2s;
+            padding: 10px 15px; cursor: pointer; font-size: 1rem; border-radius: 5px;
         }
         button:hover { background: yellow; color: black; }
-        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="instruction"><span id="cardName">讀取中...</span></div>
         <div class="sub-text">(任意輕點 啟動說明)</div>
-        
         <div class="controls">
             <button onclick="changeSpeed(-0.25)">變慢</button>
             <button onclick="resetSpeed()">原速</button>
@@ -45,11 +46,39 @@
         document.getElementById('cardName').innerText = cardValue;
 
         const audio = document.getElementById("myAudio");
-        audio.src = encodeURI(cardValue + ".mp3");
+        // 使用 encodeURIComponent 處理中文檔名
+        audio.src = encodeURIComponent(cardValue) + ".mp3";
 
-        // 震動回饋函式 (支援 Android)
         function triggerVibration() {
-            if ("vibrate" in navigator) {
-                navigator.vibrate(50); 
+            if ("vibrate" in navigator) navigator.vibrate(50);
+        }
+
+        function updateDisplay() {
+            if (!audio.paused) {
+                document.querySelector('.sub-text').innerText = "── 正在播放 (" + audio.playbackRate.toFixed(2) + "x) ──";
             }
         }
+
+        function changeSpeed(val) {
+            audio.playbackRate = Math.min(Math.max(audio.playbackRate + val, 0.5), 2.0);
+            triggerVibration();
+            updateDisplay();
+        }
+
+        function resetSpeed() {
+            audio.playbackRate = 1.0;
+            triggerVibration();
+            updateDisplay();
+        }
+
+        document.body.onclick = function(e) {
+            if (e.target.tagName === 'BUTTON') return;
+            if (audio.paused) {
+                audio.play().catch(e => alert("找不到檔案，請確認網址參數與檔名是否一致。"));
+                triggerVibration();
+                updateDisplay();
+            }
+        };
+    </script>
+</body>
+</html>
