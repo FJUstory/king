@@ -11,6 +11,7 @@
             display: flex; justify-content: center; align-items: center; 
             cursor: pointer; overflow: hidden; 
             font-family: "Microsoft JhengHei", sans-serif; 
+            touch-action: manipulation; /* 提升觸控體驗 */
         }
         .container { text-align: center; padding: 20px; max-width: 90%; }
         .instruction { font-size: 3.5rem; font-weight: bold; margin-bottom: 20px; word-wrap: break-word;}
@@ -18,9 +19,11 @@
         .controls { margin-top: 20px; }
         button { 
             background: transparent; border: 1px solid yellow; color: yellow; 
-            padding: 10px 20px; cursor: pointer; font-size: 1rem; margin: 0 10px;
+            padding: 15px 25px; cursor: pointer; font-size: 1.2rem; margin: 0 10px;
+            border-radius: 8px; transition: all 0.2s;
         }
         button:hover { background: yellow; color: black; }
+        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -44,27 +47,9 @@
         const audio = document.getElementById("myAudio");
         audio.src = encodeURI(cardValue + ".mp3");
 
-        function updateDisplay() {
-            if (!audio.paused) {
-                document.querySelector('.sub-text').innerText = "── 正在播放 (" + audio.playbackRate.toFixed(2) + "x) ──";
+        // 震動回饋函式 (支援 Android)
+        function triggerVibration() {
+            if ("vibrate" in navigator) {
+                navigator.vibrate(50); 
             }
         }
-
-        function changeSpeed(val) {
-            audio.playbackRate = Math.min(Math.max(audio.playbackRate + val, 0.5), 2.0);
-            updateDisplay();
-        }
-        function resetSpeed() {
-            audio.playbackRate = 1.0;
-            updateDisplay();
-        }
-
-        document.body.onclick = function() {
-            if (audio.paused) {
-                audio.play().catch(e => alert("找不到檔案，請確認檔名。"));
-                updateDisplay();
-            }
-        };
-    </script>
-</body>
-</html>
