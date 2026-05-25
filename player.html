@@ -13,17 +13,24 @@
             font-family: "Microsoft JhengHei", sans-serif; 
         }
         .container { text-align: center; padding: 20px; width: 100%; }
-        .instruction { font-size: 3rem; font-weight: bold; margin-bottom: 20px; }
+        .instruction { font-size: 3.5rem; font-weight: bold; margin-bottom: 20px; }
         .sub-text { font-size: 1.2rem; color: #aaa; margin-top: 10px; }
         .controls { 
             margin-top: 20px; 
             display: flex; 
             justify-content: center; 
-            gap: 10px;
+            gap: 15px;
         }
+        /* 恢復你喜歡的透明配色 */
         button { 
-            background: transparent; border: 1px solid yellow; color: yellow; 
-            padding: 10px 15px; cursor: pointer; font-size: 1rem; border-radius: 5px;
+            background: transparent; 
+            border: 1px solid yellow; 
+            color: yellow; 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            border-radius: 5px;
+            transition: 0.3s;
         }
         button:hover { background: yellow; color: black; }
     </style>
@@ -41,13 +48,19 @@
     <audio id="myAudio"></audio>
 
     <script>
+        // 核心邏輯：防錯處理
         const urlParams = new URLSearchParams(window.location.search);
         const cardValue = urlParams.get('v') || "派對歌神"; 
         document.getElementById('cardName').innerText = cardValue;
 
         const audio = document.getElementById("myAudio");
-        // 這裡確保編碼正確，對應到你的中文檔名
-        audio.src = encodeURIComponent(cardValue) + ".mp3";
+        
+        // 使用 encodeURIComponent 並加上容錯機制
+        try {
+            audio.src = encodeURIComponent(cardValue) + ".mp3";
+        } catch(e) {
+            console.error("路徑設定錯誤");
+        }
 
         function triggerVibration() {
             if ("vibrate" in navigator) navigator.vibrate(50);
@@ -75,7 +88,7 @@
             if (e.target.tagName === 'BUTTON') return;
             if (audio.paused) {
                 audio.play().catch(e => {
-                    alert("找不到檔案: " + cardValue + ".mp3，請確認檔案名稱完全一致。");
+                    alert("無法播放，請檢查是否有該檔案：" + cardValue + ".mp3");
                 });
                 triggerVibration();
                 updateDisplay();
