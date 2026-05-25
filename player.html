@@ -1,49 +1,68 @@
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const cardValue = urlParams.get('v') || "派對歌神"; 
-    document.getElementById('cardName').innerText = cardValue;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>派對歌神</title>
+    <style>
+        body { background-color: black; color: yellow; text-align: center; font-family: sans-serif; }
+        .instruction { font-size: 3rem; margin-top: 50px; }
+        .sub-text { color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="instruction"><span id="cardName">讀取中...</span></div>
+        <div class="sub-text">(任意輕點 啟動說明)</div>
+        <div class="controls">
+            <button onclick="changeSpeed(-0.25)">變慢</button>
+            <button onclick="resetSpeed()">原速</button>
+            <button onclick="changeSpeed(0.25)">變快</button>
+        </div>
+    </div>
+    <audio id="myAudio"></audio>
 
-    const audio = document.getElementById("myAudio");
+    <script>
+        // 把你剛剛貼給我的那段 script 程式碼，貼在這一行底下
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardValue = urlParams.get('v') || "派對歌神"; 
+        document.getElementById('cardName').innerText = cardValue;
 
-    // 這裡我們直接使用 encodeURIComponent 進行轉換
-    // 這樣瀏覽器會把「派對歌神」轉換成標準的 URL 編碼 (如 %E6%B4%BE...)
-    // 只要你的 GitHub 檔案真的叫「派對歌神.mp3」，這樣就能正確抓到
-    const fileName = encodeURIComponent(cardValue);
-    audio.src = fileName + ".mp3";
+        const audio = document.getElementById("myAudio");
+        const fileName = encodeURIComponent(cardValue);
+        audio.src = fileName + ".mp3";
 
-    // --- 以下保持你現有的功能 ---
-    function triggerVibration() {
-        if ("vibrate" in navigator) navigator.vibrate(50);
-    }
-
-    function updateDisplay() {
-        if (!audio.paused) {
-            document.querySelector('.sub-text').innerText = "── 正在播放 (" + audio.playbackRate.toFixed(2) + "x) ──";
+        function triggerVibration() {
+            if ("vibrate" in navigator) navigator.vibrate(50);
         }
-    }
 
-    function changeSpeed(val) {
-        audio.playbackRate = Math.min(Math.max(audio.playbackRate + val, 0.5), 2.0);
-        triggerVibration();
-        updateDisplay();
-    }
+        function updateDisplay() {
+            if (!audio.paused) {
+                document.querySelector('.sub-text').innerText = "── 正在播放 (" + audio.playbackRate.toFixed(2) + "x) ──";
+            }
+        }
 
-    function resetSpeed() {
-        audio.playbackRate = 1.0;
-        triggerVibration();
-        updateDisplay();
-    }
-
-    document.body.onclick = function(e) {
-        if (e.target.tagName === 'BUTTON') return;
-        if (audio.paused) {
-            // 加入錯誤監聽，如果有錯會顯示在頁面上供你參考
-            audio.play().catch(e => {
-                console.error(e);
-                alert("找不到檔案: " + cardValue + ".mp3，請確認檔案名稱是否完全一致 (包含空格或標點)。");
-            });
+        function changeSpeed(val) {
+            audio.playbackRate = Math.min(Math.max(audio.playbackRate + val, 0.5), 2.0);
             triggerVibration();
             updateDisplay();
         }
-    };
-</script>
+
+        function resetSpeed() {
+            audio.playbackRate = 1.0;
+            triggerVibration();
+            updateDisplay();
+        }
+
+        document.body.onclick = function(e) {
+            if (e.target.tagName === 'BUTTON') return;
+            if (audio.paused) {
+                audio.play().catch(e => {
+                    alert("找不到檔案: " + cardValue + ".mp3，請確認檔案名稱是否完全一致。");
+                });
+                triggerVibration();
+                updateDisplay();
+            }
+        };
+    </script>
+</body>
+</html>
