@@ -33,32 +33,24 @@
         audio.src = encodeURIComponent(cardValue) + ".mp3";
 
         let startX = 0;
-        let lastTap = 0;
+        let tapCount = 0;
+        let tapTimer = null;
 
         function triggerVibration() {
             if ("vibrate" in navigator) navigator.vibrate(50);
         }
 
-        // 監聽點擊/觸控
+        // 觸控開始 (紀錄位置)
         document.body.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
-            
-            const now = new Date().getTime();
-            if (now - lastTap < 300) {
-                // 這是雙擊
-                audio.pause();
-                document.getElementById('statusText').innerText = "已停止";
-                triggerVibration();
-                e.preventDefault(); // 阻止後續事件
-            }
-            lastTap = now;
-        }, {passive: false});
+        });
 
+        // 觸控結束 (區分滑動與點擊)
         document.body.addEventListener('touchend', (e) => {
             let endX = e.changedTouches[0].clientX;
             let diff = endX - startX;
 
-            // 如果滑動距離夠大，判定為調整速度
+            // 1. 若滑動幅度大，判定為調整速度
             if (Math.abs(diff) > 50) {
                 if (diff > 0) {
                     audio.playbackRate = Math.min(audio.playbackRate + 0.25, 2.0);
@@ -67,11 +59,30 @@
                 }
                 triggerVibration();
                 document.getElementById('statusText').innerText = "倍率: " + audio.playbackRate.toFixed(2) + "x";
-            } else {
-                // 如果只是輕點且沒在滑動
-                if (audio.paused) {
-                    audio.play().catch(e => console.log("等待播放"));
-                    document.getElementById('statusText').innerText = "正在播放";
+            } 
+            // 2. 若滑動幅度小，判定為點擊 (單擊或雙擊)
+            else {
+                tapCount++;
+                if (tapCount === 1) {
+                    tapTimer = setTimeout(() => {
+                        // 單擊邏輯：播放/暫停
+                        if (audio.paused) {
+                            audio.play();
+                            document.getElementById('statusText').innerText = "正在播放";
+                        } else {
+                            audio.pause();
+                            document.getElementById('statusText').innerText = "已暫停";
+                        }
+                        tapCount = 0;
+                    }, 300); // 等待 300ms 判斷是否為雙擊
+                } else if (tapCount === 2) {
+                    clearTimeout(tapTimer);
+                    // 雙擊邏輯：強制停止並歸零
+                    audio.pause();
+                    audio.currentTime = 0; 
+                    document.getElementById('statusText').innerText = "已停止";
+                    triggerVibration();
+                    tapCount = 0;
                 }
             }
         });
