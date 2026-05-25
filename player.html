@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心靈共振播放器</title>
+    <style>
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background-color: black; color: yellow; 
+            display: flex; justify-content: center; align-items: center; 
+            cursor: pointer; overflow: hidden; 
+            font-family: "Microsoft JhengHei", sans-serif; 
+        }
+        .container { text-align: center; padding: 20px; max-width: 90%; }
+        .instruction { font-size: 3.5rem; font-weight: bold; margin-bottom: 20px; word-wrap: break-word;}
+        .sub-text { font-size: 1.2rem; color: #aaa; margin-top: 10px; display: block;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="instruction"><span id="cardName">讀取中...</span></div>
+        <div class="sub-text">(輕點此處 啟動共振)</div>
+    </div>
+    <audio id="myAudio"></audio>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardValue = urlParams.get('v') || "心靈共振"; 
+        document.getElementById('cardName').innerText = cardValue;
+
+        const audio = document.getElementById("myAudio");
+        audio.src = cardValue + ".mp3";
+
+        document.body.onclick = function() {
+            audio.play().catch(e => {
+                alert("找不到「" + cardValue + ".mp3」音檔，請確認檔案已上傳。");
+            });
+            document.querySelector('.sub-text').innerText = "── 正在播放 ──";
+        };
+    </script>
+</body>
+</html>
