@@ -9,19 +9,18 @@
             margin: 0; padding: 0; width: 100%; height: 100%; 
             background-color: black; color: yellow; 
             display: flex; justify-content: center; align-items: center; 
-            cursor: pointer; overflow: hidden; 
+            overflow: hidden; touch-action: none;
             font-family: "Microsoft JhengHei", sans-serif; 
-            touch-action: none; /* 關鍵：鎖定觸控操作 */
         }
-        .container { text-align: center; padding: 20px; width: 100%; }
-        .instruction { font-size: 3rem; font-weight: bold; margin-bottom: 10px; }
-        .sub-text { font-size: 1.2rem; color: #aaa; margin-top: 10px; }
+        .container { text-align: center; width: 100%; }
+        .instruction { font-size: 3rem; font-weight: bold; }
+        .sub-text { color: #aaa; margin-top: 20px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="instruction" id="cardName">讀取中...</div>
-        <div class="sub-text" id="statusText">(向右滑加速 / 向左滑減速 / 雙擊停止)</div>
+        <div class="sub-text" id="statusText">任意輕點 開啟共鳴</div>
     </div>
     <audio id="myAudio"></audio>
 
@@ -40,39 +39,40 @@
             if ("vibrate" in navigator) navigator.vibrate(50);
         }
 
-        // 觸控開始 (雙擊偵測)
+        // 監聽點擊/觸控
         document.body.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
+            
             const now = new Date().getTime();
             if (now - lastTap < 300) {
+                // 這是雙擊
                 audio.pause();
-                document.getElementById('statusText').innerText = "── 已停止 ──";
+                document.getElementById('statusText').innerText = "已停止";
                 triggerVibration();
+                e.preventDefault(); // 阻止後續事件
             }
             lastTap = now;
-        });
+        }, {passive: false});
 
-        // 觸控結束 (滑動控制)
         document.body.addEventListener('touchend', (e) => {
             let endX = e.changedTouches[0].clientX;
             let diff = endX - startX;
 
+            // 如果滑動距離夠大，判定為調整速度
             if (Math.abs(diff) > 50) {
-                if (diff > 0) { // 向右加速
+                if (diff > 0) {
                     audio.playbackRate = Math.min(audio.playbackRate + 0.25, 2.0);
-                } else { // 向左減速
+                } else {
                     audio.playbackRate = Math.max(audio.playbackRate - 0.25, 0.5);
                 }
                 triggerVibration();
-                document.getElementById('statusText').innerText = "── 倍率: " + audio.playbackRate.toFixed(2) + "x ──";
-            }
-        });
-
-        // 啟動點擊
-        document.body.addEventListener('click', () => {
-            if (audio.paused) {
-                audio.play().catch(e => alert("無法播放，請檢查檔案名稱。"));
-                document.getElementById('statusText').innerText = "── 正在播放 ──";
+                document.getElementById('statusText').innerText = "倍率: " + audio.playbackRate.toFixed(2) + "x";
+            } else {
+                // 如果只是輕點且沒在滑動
+                if (audio.paused) {
+                    audio.play().catch(e => console.log("等待播放"));
+                    document.getElementById('statusText').innerText = "正在播放";
+                }
             }
         });
     </script>
